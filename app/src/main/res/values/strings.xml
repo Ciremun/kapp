@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">kapp</string>
+    <string name="send">Отправить</string>
+    <string name="message">сообщение</string>
+    <string name="log">Лог:</string>
+    <string name="password">пароль</string>
+</resources>
