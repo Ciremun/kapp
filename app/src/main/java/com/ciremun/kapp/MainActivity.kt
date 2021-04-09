@@ -3,8 +3,7 @@ package com.ciremun.kapp
 import android.app.Activity
 import android.os.AsyncTask
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
+import android.text.method.ScrollingMovementMethod
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -42,6 +41,7 @@ class MainActivity : Activity() {
         channelField = findViewById<View>(R.id.channelField) as EditText
         passwordField = findViewById<View>(R.id.passwordField) as EditText
         log = findViewById<View>(R.id.log) as TextView
+        log?.movementMethod = ScrollingMovementMethod()
         messageField = findViewById<View>(R.id.mainEditText) as EditText
         connectToChannelButton = findViewById<View>(R.id.connectToChannelButton) as Button
         connectToChannelButton?.text = "Подключиться"
@@ -75,7 +75,7 @@ class MainActivity : Activity() {
 
     // Вывести сообщение на экран
     fun print(text: String?) {
-        log!!.text = "${log!!.text}\n>>> $text\n"
+        log!!.append("\n$text")
     }
 
     // Вызывается нажатием кнопки в приложении
@@ -135,9 +135,12 @@ class MainActivity : Activity() {
         override fun doInBackground(p1: Array<Void?>): Void? {
             try {
 
-                socket = Socket(host, port)
-                breader = BufferedReader(InputStreamReader(socket!!.getInputStream()))
-                bwriter = BufferedWriter(OutputStreamWriter(socket!!.getOutputStream()))
+                if (socket == null)
+                {
+                    socket = Socket(host, port)
+                    breader = BufferedReader(InputStreamReader(socket!!.getInputStream()))
+                    bwriter = BufferedWriter(OutputStreamWriter(socket!!.getOutputStream()))
+                }
 
                 bwriter?.let { sendMessage(it, "PASS $password") }
                 pprint("Пароль отправлен")

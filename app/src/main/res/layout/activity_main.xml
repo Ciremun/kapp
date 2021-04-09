@@ -71,7 +71,10 @@
             android:id="@+id/log"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="@string/log"
-            android:textSize="15sp" />
+            android:text=""
+            android:textSize="15sp"
+            android:scrollbars="vertical"
+            android:maxLines="40"
+            android:gravity="bottom"/>
     </ScrollView>
 </LinearLayout>
