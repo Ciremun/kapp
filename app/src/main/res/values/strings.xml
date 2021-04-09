@@ -4,4 +4,6 @@
     <string name="message">сообщение</string>
     <string name="log">Лог:</string>
     <string name="password">пароль</string>
+    <string name="channel">канал</string>
+    <string name="username">пользователь</string>
 </resources>

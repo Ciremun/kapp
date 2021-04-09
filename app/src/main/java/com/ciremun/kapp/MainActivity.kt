@@ -1,7 +1,6 @@
 package com.ciremun.kapp
 
 import android.app.Activity
-import android.opengl.Visibility
 import android.os.AsyncTask
 import android.os.Bundle
 import android.text.Editable
@@ -18,34 +17,37 @@ import java.net.Socket
 
 
 class MainActivity : Activity() {
-    private var et: EditText? = null
+    private var messageField: EditText? = null
+    private var passwordField: EditText? = null
+    private var nicknameField: EditText? = null
+    private var channelField: EditText? = null
+    private var connectToChannelButton: Button? = null
+    private var disconnectFromChannelButton: Button? = null
     private var log: TextView? = null
     private var socket: Socket? = null
     private var bwriter: BufferedWriter? = null
     private var breader: BufferedReader? = null
+    private var channel: String? = null
+    private var password: String? = null
+    private var nickname: String? = null
 
     private val host = "irc.chat.twitch.tv"
     private val port = 6667
-    private val channel = "#tsoding"
-    private val nickname = "shtcd"
-    private var password = ""
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContentView(R.layout.activity_main)
-        val passwordField = findViewById<View>(R.id.passwordField) as EditText
-        passwordField.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable) {}
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int)
-            {
-                password = passwordField.text.toString()
-                passwordField.visibility = View.GONE
-            }
-        })
+        nicknameField = findViewById<View>(R.id.nicknameField) as EditText
+        channelField = findViewById<View>(R.id.channelField) as EditText
+        passwordField = findViewById<View>(R.id.passwordField) as EditText
         log = findViewById<View>(R.id.log) as TextView
-        et = findViewById<View>(R.id.mainEditText) as EditText
-        (findViewById<View>(R.id.connectToChannelButton) as Button).text = "Подключиться к $channel"
+        messageField = findViewById<View>(R.id.mainEditText) as EditText
+        connectToChannelButton = findViewById<View>(R.id.connectToChannelButton) as Button
+        connectToChannelButton?.text = "Подключиться"
+        disconnectFromChannelButton = findViewById<View>(R.id.disconnectFromChannelButton) as Button
+        disconnectFromChannelButton?.text = "Отключиться"
+        disconnectFromChannelButton?.visibility = View.GONE
     }
 
     // Перенаправить сообщение на поток принадлежащий интерфейсу
@@ -65,9 +67,9 @@ class MainActivity : Activity() {
 
     // Отправить сообщение на сервер из поля ввода
     fun sendText(v: View) {
-        if (et!!.text.toString().isNotEmpty()) {
-            MessageSender(et!!.text.toString()).execute()
-            et!!.setText("")
+        if (messageField!!.text.toString().isNotEmpty()) {
+            MessageSender("PRIVMSG $channel :${messageField!!.text}").execute()
+            messageField!!.setText("")
         }
     }
 
@@ -78,14 +80,50 @@ class MainActivity : Activity() {
 
     // Вызывается нажатием кнопки в приложении
     fun connectToChannel(v: View) {
+        if (passwordField?.text?.isEmpty() == true)
+        {
+            pprint("Ошибка: Введите пароль")
+            return
+        }
+        if (nicknameField?.text?.isEmpty() == true)
+        {
+            pprint("Ошибка: Введите имя пользователя")
+            return
+        }
+        if (channelField?.text?.isEmpty() == true)
+        {
+            pprint("Ошибка: Введите канал")
+            return
+        }
+        password = passwordField?.text.toString()
+        nickname = nicknameField?.text.toString()
+        channel = channelField?.text.toString()
+
+        channelField?.text?.clear()
+
+        passwordField?.visibility = View.GONE
+        nicknameField?.visibility = View.GONE
+        channelField?.visibility = View.GONE
+        connectToChannelButton?.visibility = View.GONE
+        disconnectFromChannelButton?.visibility = View.VISIBLE
         Connect().execute()
+    }
+
+    fun disconnectFromChannel(v: View)
+    {
+        passwordField?.visibility = View.VISIBLE
+        nicknameField?.visibility = View.VISIBLE
+        channelField?.visibility = View.VISIBLE
+        connectToChannelButton?.visibility = View.VISIBLE
+        disconnectFromChannelButton?.visibility = View.GONE
+        MessageSender("PART $channel").execute()
     }
 
     // Отправить сообщение на сервер при помощи Асинхронной задачи
     inner class MessageSender(private var msg: String) : AsyncTask<String?, Void?, Void?>() {
 
         override fun doInBackground(vararg params: String?): Void? {
-            bwriter?.let { sendMessage(it, "PRIVMSG $channel :$msg") }
+            bwriter?.let { sendMessage(it, msg) }
             return null
         }
 
@@ -97,18 +135,9 @@ class MainActivity : Activity() {
         override fun doInBackground(p1: Array<Void?>): Void? {
             try {
 
-                if (socket == null)
-                {
-                    socket = Socket(host, port)
-                    bwriter = BufferedWriter(OutputStreamWriter(socket!!.getOutputStream()))
-                    breader = BufferedReader(InputStreamReader(socket!!.getInputStream()))
-                }
-
-                if (password.isEmpty())
-                {
-                    pprint("Ошибка: Введите пароль")
-                    return null
-                }
+                socket = Socket(host, port)
+                breader = BufferedReader(InputStreamReader(socket!!.getInputStream()))
+                bwriter = BufferedWriter(OutputStreamWriter(socket!!.getOutputStream()))
 
                 bwriter?.let { sendMessage(it, "PASS $password") }
                 pprint("Пароль отправлен")

@@ -14,12 +14,32 @@
         android:hint="@string/password"
         android:inputType=""
         tools:ignore="TextFields" />
-
+    <EditText
+        android:id="@+id/nicknameField"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints=""
+        android:hint="@string/username"
+        android:inputType=""
+        tools:ignore="TextFields" />
+    <EditText
+        android:id="@+id/channelField"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints=""
+        android:hint="@string/channel"
+        android:inputType=""
+        tools:ignore="TextFields" />
     <Button
         android:id="@+id/connectToChannelButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="connectToChannel" />
+    <Button
+        android:id="@+id/disconnectFromChannelButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="disconnectFromChannel" />
 
     <LinearLayout
         android:layout_width="fill_parent"
