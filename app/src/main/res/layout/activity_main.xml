@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:autofillHints=""
         android:hint="@string/password"
-        android:inputType=""
+        android:inputType="textPassword"
         tools:ignore="TextFields" />
     <EditText
         android:id="@+id/nicknameField"
