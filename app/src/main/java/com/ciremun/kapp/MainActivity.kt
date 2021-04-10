@@ -29,6 +29,7 @@ class MainActivity : Activity() {
     private var channel: String? = null
     private var password: String? = null
     private var nickname: String? = null
+    private val chatMessageRegex = "^:(\\w+)!\\w+@[\\w.]+ PRIVMSG #\\w+ :(.*)".toRegex()
 
     private val host = "irc.chat.twitch.tv"
     private val port = 6667
@@ -135,12 +136,9 @@ class MainActivity : Activity() {
         override fun doInBackground(p1: Array<Void?>): Void? {
             try {
 
-                if (socket == null)
-                {
-                    socket = Socket(host, port)
-                    breader = BufferedReader(InputStreamReader(socket!!.getInputStream()))
-                    bwriter = BufferedWriter(OutputStreamWriter(socket!!.getOutputStream()))
-                }
+                socket = Socket(host, port)
+                breader = BufferedReader(InputStreamReader(socket!!.getInputStream()))
+                bwriter = BufferedWriter(OutputStreamWriter(socket!!.getOutputStream()))
 
                 bwriter?.let { sendMessage(it, "PASS $password") }
                 pprint("Пароль отправлен")
@@ -162,12 +160,22 @@ class MainActivity : Activity() {
         Thread() {
         private var line: String? = null
 
+        fun filterMessage(line: String): String
+        {
+            val (_, username, message) = checkNotNull(chatMessageRegex.matchEntire(line)?.groupValues)
+            return "$username: $message"
+        }
+
         override fun run() {
             try {
                 while (`in`.readLine().also { line = it } != null) {
                     if (line!!.startsWith("PING")) {
                         sendMessage(out, "PONG ${line!!.substring(5)}")
                     } else {
+                        if (line!!.contains("PRIVMSG"))
+                        {
+                            line = filterMessage(line!!)
+                        }
                         pprint(line)
                     }
                 }
